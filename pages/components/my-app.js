@@ -1,6 +1,8 @@
 import cheerio from "cheerio";
 import axios from "axios";
 import Head from "next/head";
+import Link from "next/link";
+import { saveAs } from "file-saver";
 
 export async function getServerSideProps(context) {
   const { data } = context.query;
@@ -21,8 +23,10 @@ export async function getServerSideProps(context) {
   }
   // const response = await axios.get('https://tinmoi.vn/bo-gddt-du-kien-thoi-gian-cong-bo-ket-qua-thi-tot-nghiep-thpt-011623026.html');
 
-  const $ = cheerio.load(response.data);
-  var title, image, description, bodyOne, bodyTwo;
+  const $ = cheerio.load(response.data, {
+    xmlMode: true,
+  });
+  var title, image, description, bodyOne, bodyTwo, filePath;
   $("center").remove();
   $("head").map((index, el) => {
     title = $(el).find("title").text(); //title
@@ -35,26 +39,17 @@ export async function getServerSideProps(context) {
   });
 
   //wirte file
-//   const filePath = "./datt.js";
-//   const fileContent = `<div>
-//   <Head>
-//     <title>${title}</title>
-//     <meta name="description" content={${description}} />
-//     <meta property="og:title" content=${title} />
-//     <meta property="og:description" content={${description}} />
-//     <meta property="og:image" content={${image}} />
-//   </Head>
-//   <div dangerouslySetInnerHTML={{ __html: ${bodyOne} }} />;
-//   <div
-//     class="content-detail text-justify"
-//     id="main-detail"
-//     itemprop="articleBody"
-//   >
-//     <div dangerouslySetInnerHTML={{ __html: ${bodyTwo}  }} />;
-//   </div>
-// </div>`;
-//   const fs = require("fs");
-//   await fs.promises.writeFile(filePath, fileContent, "utf-8");
+  filePath = `./${title
+    .toLowerCase()
+    .replace(/[.,]/g, "")
+    .replace(/\s+/g, "-")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+
+    .replace(/[đĐ]/g, "d")}.js`;
+  const fileContent = `<div></div>`;
+  const fs = require("fs");
+  await fs.promises.writeFile(filePath, fileContent, "utf-8");
   return {
     props: {
       title,
@@ -62,13 +57,47 @@ export async function getServerSideProps(context) {
       image,
       bodyOne,
       bodyTwo,
+      filePath,
     },
   };
 }
 
 function Post(props) {
+  function downloadFile() {
+    var text = `<div>
+   
+    <Head>
+      <title>"${props.title}"</title>
+      <meta name="description" content="${props.description}" />
+      <meta property="og:title" content="${props.title}" />
+      <meta property="og:description" content="${props.description}" />
+      <meta property="og:image" content="${props.image}"/>
+    </Head>
+    <div> ${props.bodyOne} </div>;
+    <div
+      class="content-detail text-justify"
+      id="main-detail"
+      itemprop="articleBody"
+    >
+       ${props.bodyTwo.replace(/<[^>]+>/g, "\n$&")} 
+    </div>
+   
+  </div>`;
+    const blob = new Blob([text], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = props.filePath;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
   return (
     <div>
+      <button onClick={downloadFile} className="fixed-button">
+        Download
+      </button>
       <Head>
         <title>{props.title}</title>
         <meta name="description" content={props.description} />

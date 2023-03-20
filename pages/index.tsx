@@ -12,7 +12,7 @@ const schema = yup.object().shape({
     .required("Địa chỉ URL là bắt buộc"),
 });
 
-export default function UrlForm() {
+export default function UrlForm()  {
   var [data, setData] = useState("");
   const router = useRouter();
 
@@ -23,8 +23,8 @@ export default function UrlForm() {
       <h1>Data is loading</h1>;
     } else {
       router.push({
-        pathname: "my-app",
-        query: { data }
+        pathname: "./components/my-app",
+        query: { data },
       });
     }
   };

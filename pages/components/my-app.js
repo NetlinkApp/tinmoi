@@ -47,9 +47,9 @@ export async function getServerSideProps(context) {
     .replace(/[\u0300-\u036f]/g, "")
 
     .replace(/[đĐ]/g, "d")}.js`;
-  const fileContent = `<div></div>`;
-  const fs = require("fs");
-  await fs.promises.writeFile(filePath, fileContent, "utf-8");
+  // const fileContent = `<div></div>`;
+  // const fs = require("fs");
+  // await fs.promises.writeFile(filePath, fileContent, "utf-8");
   return {
     props: {
       title,
